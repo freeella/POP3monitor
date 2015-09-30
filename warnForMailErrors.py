@@ -2,7 +2,11 @@
 #!/usr/bin/env python2.7
 
 __doc__ = info = '''
-A small script using file .getmail/getmailrc to alert if there are hanging mails written by Kai Ellinger - coding@blicke.de
+A small script using file .getmail/getmailrc to alert if there are 3 or more mails on the remote POP3 server.
+
+This script can be used as a cron job in order to receive alerts via mail.
+
+Kai Ellinger 2015 - coding@blicke.de
 '''
 
 # used modules
