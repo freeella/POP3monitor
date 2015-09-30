@@ -1,4 +1,5 @@
 #!/usr/local/bin/python2.7
+#!/usr/local/bin/python2.7 -O
 #!/usr/bin/env python2.7
 
 __doc__ = info = '''
@@ -6,7 +7,7 @@ A small script using file .getmail/getmailrc to alert if there are 3 or more mai
 
 This script can be used as a cron job in order to receive alerts via mail.
 
-Kai Ellinger 2015 - coding@blicke.de
+Kai Ellinger (2015) - coding@blicke.de
 '''
 
 # used modules
@@ -22,7 +23,9 @@ is_debug = False
 def parse_arguments():
 	parser = argparse.ArgumentParser(description='Checks for hanging mails')
 	parser.add_argument('-v','--version', action='version', version='%(prog)s 1.0')
-	parser.add_argument('-D','--DEBUG', action='store_true', dest='DEBUG', help='request debug logging')
+	# if not calling python with -O option
+	if __debug__:
+		parser.add_argument('-D','--DEBUG', action='store_true', dest='DEBUG', help='request debug logging')
 	parser.add_argument('-C','--config', type=str, dest='CONFIG', default="%s/%s" % ( os.environ['HOME'] , '.getmail/getmailrc' ), help='GETMAIL config file' )
 	args = parser.parse_args()
 	if not os.path.isfile(args.CONFIG):
