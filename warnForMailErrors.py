@@ -34,7 +34,7 @@ def parse_arguments():
 def read_config(config_file):
 	global is_debug
 	pop3_server = pop3_username = pop3_password = None
-	if is_debug is True:
+	if is_debug:
 		print "CONFIG: %s" % config_file
 	config = ConfigParser.ConfigParser()
 	config.read( config_file )
@@ -71,7 +71,7 @@ def main():
 		is_debug = True
 	(pop3_server, pop3_username, pop3_password) = read_config( args.CONFIG )
 	message_count = count_waiting_messages(pop3_server, pop3_username, pop3_password)
-	if (2 < message_count) or (is_debug is True):
+	if (2 < message_count) or (is_debug):
 		print "WARN: Server %s has Message Count of (%d)!!!" % ( pop3_server, message_count )
 	if (0 > message_count):
 		return message_count
