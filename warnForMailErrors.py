@@ -27,10 +27,16 @@ def print_stack():
 		'''
 		This function is used for debugging only.
 		'''
+		# - logging.debug("text",exc_info=True) does not work
+		# See: https://bugs.python.org/issue9427
 		stack_trace = traceback.format_stack()
 		stack_trace.pop()
-		logging.debug(u'-------------------- BEGIN: STACKTRACE --------------------\n++%s' % ('++'.join( stack_trace )) )
-		logging.debug( "-------------------- END: STACKTRACE --------------------")
+		# create both strings only once and reuse them
+		if not hasattr(print_stack, "BEGIN"):
+			print_stack.BEGIN = ' '.join( ["-" * 20, "BEGIN: STACKTRACE", "-" * 20, u'\n\n++%s'] )
+			print_stack.END   = ' '.join( ["-" * 20, "END:   STACKTRACE", "-" * 20] )
+		logging.debug( print_stack.BEGIN % (u'++'.join( stack_trace )) )
+		logging.debug( print_stack.END )
 
 # Read command line arguments
 def parse_arguments():
