@@ -19,6 +19,10 @@ import poplib       # accessing the POP3 account
 import logging      # for logging text
 
 # DEBUG
+# - even higher log levels ignore debug messages
+#   there might be a performance reasons for checking
+#   whether code needs to be executed at all if no debug
+#   message will be printed
 is_debug   = False
 
 # Printing stack trace
