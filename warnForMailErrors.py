@@ -20,10 +20,6 @@ import logging      # for logging text
 
 # DEBUG
 is_debug   = False
-# TODO - can't redirect stack trace to log file
-#        only printing stack trace when using STDOUT
-#        need to fix later
-log_to_stdout = True
 
 # Printing stack trace
 def print_stack():
@@ -31,17 +27,14 @@ def print_stack():
 		'''
 		This function is used for debugging only.
 		'''
-		if log_to_stdout:
-			try:
-				raise TypeError("NeedStackTrace!")
-			except TypeError, err:
-				print "-" * 20, "BEGIN: STACKTRACE", "-" * 20
-				traceback.print_stack()
-				print "-" * 20, "END: STACKTRACE", "-" * 20
+		stack_trace = traceback.format_stack()
+		stack_trace.pop()
+		logging.debug(u'-------------------- BEGIN: STACKTRACE --------------------\n++%s' % ('++'.join( stack_trace )) )
+		logging.debug( "-------------------- END: STACKTRACE --------------------")
 
 # Read command line arguments
 def parse_arguments():
-	global is_debug, log_to_stdout
+	global is_debug
 	parser = argparse.ArgumentParser(description='Checks for hanging mails')
 	parser.add_argument('-v','--version', action='version', version='%(prog)s 1.0.2')
 	# if not calling python with -O option
@@ -85,7 +78,6 @@ def parse_arguments():
 	# writing to STDOUT or to file?
 	if write_to_log:
 		logging.basicConfig(filename=args.LOGFILE, format=logging_format_string, level=args.LOGLEVEL)
-		log_to_stdout = False
 	else:
 		logging.basicConfig(format=logging_format_string, level=args.LOGLEVEL)
 		if log_file_error_msg is not None:
@@ -142,7 +134,6 @@ def main():
 	if (0 > message_count):
 		logging.error("Not connected to server '%s' with user '%s'! Reason (%d)!!!" % ( args.pop3_server, args.pop3_username, message_count ) )
 		return message_count
-
 
 # only call MAIN method if directly called!
 if __name__ == '__main__':
