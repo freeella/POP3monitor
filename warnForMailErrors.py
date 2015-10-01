@@ -43,7 +43,7 @@ def print_stack():
 def parse_arguments():
 	global is_debug, log_to_stdout
 	parser = argparse.ArgumentParser(description='Checks for hanging mails')
-	parser.add_argument('-v','--version', action='version', version='%(prog)s 1.0.1')
+	parser.add_argument('-v','--version', action='version', version='%(prog)s 1.0.2')
 	# if not calling python with -O option
 	# ORDER - having parameter INFO and DEBUG sets log level to DEBUG
 	parser.add_argument('-I','--INFO', action='store_const', dest='LOGLEVEL', const=logging.INFO, help='log level set to INFO')
@@ -93,10 +93,12 @@ def parse_arguments():
 
 	# is the config file readable?
 	logging.info("CONFIG file: %s" % args.CONFIG )
-	if not os.path.isfile(args.CONFIG):
+	if not os.path.isfile(args.CONFIG) or not os.access( args.CONFIG, os.R_OK ):
 		logging.error("Can NOT access file '%s'!" % args.CONFIG )
 		if is_debug: print_stack()
 		return None
+	else:
+		(args.pop3_server, args.pop3_username, args.pop3_password) = read_config( args.CONFIG )
 	return args
 
 # Read GETMAIL config file!
@@ -132,13 +134,13 @@ def main():
 	args = parse_arguments()
 	if args is None:
 		return -22
-	(pop3_server, pop3_username, pop3_password) = read_config( args.CONFIG )
-	message_count = count_waiting_messages(pop3_server, pop3_username, pop3_password)
+	message_count = count_waiting_messages(args.pop3_server, args.pop3_username, args.pop3_password)
 	if (2 < message_count):
-		logging.warn("Server %s has Message Count of (%d)!!!" % ( pop3_server, message_count ) )
+		logging.warn("User %s@%s has %d queued mails!!! Is GETMAIL working well?" % ( args.pop3_username, args.pop3_server, message_count ) )
 	elif (0 <= message_count):
-		logging.info("Server %s has Message Count of (%d)!!!" % ( pop3_server, message_count ) )
+		logging.info("User %s@%s has %d queued mails!!!" % ( args.pop3_username, args.pop3_server, message_count ) )
 	if (0 > message_count):
+		logging.error("Not connected to server '%s' with user '%s'! Reason (%d)!!!" % ( args.pop3_server, args.pop3_username, message_count ) )
 		return message_count
 
 
