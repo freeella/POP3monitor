@@ -99,6 +99,7 @@ def parse_arguments(syslogApName='PYTHON',syslogFacility=SysLogHandler.LOG_USER)
 
 # Configure logging according to command line options
 def setup_logging(args, syslogApName, syslogFacility):
+	global is_debug
 	# setting log format
 	# See: https://docs.python.org/2/library/logging.html#logrecord-attributes
 	logging_format_string = '%(asctime)s [%(levelname)-7s][%(filename)s:%(lineno)04d][%(funcName)s] %(message)s'
@@ -225,6 +226,7 @@ def count_waiting_messages(pop3_server, pop3_username, pop3_password):
 		MAIL.pass_(pop3_password)
 		return MAIL.stat()[0]
 	else:
+		logging.error("not connected because some credentials are missing!")
 		return -11
 
 # MAIN method
