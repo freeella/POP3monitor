@@ -90,10 +90,11 @@ def parse_arguments(syslogApName='PYTHON',syslogFacility=SysLogHandler.LOG_USER)
 	logging.debug("CONFIG file: %s" % args.CONFIG )
 	if not os.path.isfile(args.CONFIG) or not os.access( args.CONFIG, os.R_OK ):
 		logging.error("Can NOT access file '%s'!" % args.CONFIG )
-		if is_debug: print_stack()
+		if is_debug: print_stack() # just to test the method
 		args.ERROR_READCONFIG = True
 	else:
-		(args.pop3_server, args.pop3_username, args.pop3_password) = read_config( args.CONFIG )
+		if not read_config( args.CONFIG, args ):
+			args.ERROR_READCONFIG = True
 	return args
 
 # Configure logging according to command line options
@@ -193,7 +194,7 @@ def add_business_logic_arguments(parser):
 	parser.add_argument('-m','--warn-messages', type=int, dest='WARNMSGCOUNT', default=3, help='warning at this amount of waiting messages (default 3)' )
 
 # Read GETMAIL config file!
-def read_config(config_file):
+def read_config(config_file, args):
 	pop3_server = pop3_username = pop3_password = None
 	config = ConfigParser.ConfigParser()
 	config.read( config_file )
@@ -202,13 +203,19 @@ def read_config(config_file):
 		if config.has_option("retriever", "type"):
 			if "MultidropPOP3SSLRetriever" == config.get("retriever", "type"):
 				if config.has_option("retriever", "server"):
-					pop3_server = config.get("retriever", "server")
+					args.pop3_server = config.get("retriever", "server")
 				if config.has_option("retriever", "username"):
-					pop3_username = config.get("retriever", "username")
+					args.pop3_username = config.get("retriever", "username")
 				if config.has_option("retriever", "password"):
-					pop3_password = config.get("retriever", "password")
+					args.pop3_password = config.get("retriever", "password")
+			else:
+				logging.error("the current version supports 'type=MultidropPOP3SSLRetriever' only!")
+				return False
+	else:
+		logging.error("no section [retriever] found!")
+		return False
 
-	return (pop3_server, pop3_username, pop3_password)
+	return True
 
 # Connect to the POP3 server and count messages
 def count_waiting_messages(pop3_server, pop3_username, pop3_password):
