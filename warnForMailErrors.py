@@ -258,4 +258,4 @@ def main():
 if __name__ == '__main__':
 	sys.exit(main())
 
-# vim: set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab :
+# vim: set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab number syntax=python foldmethod=indent nofoldenable :
