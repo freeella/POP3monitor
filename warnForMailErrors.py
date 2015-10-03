@@ -207,7 +207,7 @@ def read_config(config_file):
 					pop3_username = config.get("retriever", "username")
 				if config.has_option("retriever", "password"):
 					pop3_password = config.get("retriever", "password")
-	logging.debug("config is fine!")
+
 	return (pop3_server, pop3_username, pop3_password)
 
 # Connect to the POP3 server and count messages
