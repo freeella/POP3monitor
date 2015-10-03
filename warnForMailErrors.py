@@ -257,3 +257,5 @@ def main():
 # only call MAIN method if directly called!
 if __name__ == '__main__':
 	sys.exit(main())
+
+# vim: set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab :
