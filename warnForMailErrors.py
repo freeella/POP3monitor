@@ -47,15 +47,18 @@ if not sys.platform.startswith('win'):
 is_debug   = False
 
 # Printing stack trace
-def print_stack():
+def print_stack(stack_trace=None):
 	if __debug__:
 		'''
 		This function is used for debugging only.
 		'''
-		# - logging.debug("text",exc_info=True) does not work
-		# See: https://bugs.python.org/issue9427
-		stack_trace = traceback.format_stack()
-		stack_trace.pop()
+		stack_trace = None
+		if stack_trace is None:
+			# - logging.debug("text",exc_info=True) does not work
+			# See: https://bugs.python.org/issue9427
+			stack_trace = traceback.format_stack()
+			stack_trace.pop()
+
 		# create both strings only once and reuse them
 		if not hasattr(print_stack, "BEGIN"):
 			print_stack.BEGIN = ' '.join( ["-" * 20, "BEGIN: STACKTRACE", "-" * 20, u'\n++%s'] )
@@ -220,11 +223,25 @@ def read_config(config_file, args):
 
 # Connect to the POP3 server and count messages
 def count_waiting_messages(pop3_server, pop3_username, pop3_password):
+	global is_debug
 	if ( pop3_server is not None) and ( pop3_username is not None ) and ( pop3_password is not None ):
-		MAIL = poplib.POP3_SSL(pop3_server)
-		MAIL.user(pop3_username)
-		MAIL.pass_(pop3_password)
-		return MAIL.stat()[0]
+		MAIL = None
+		try:
+			MAIL = poplib.POP3_SSL(pop3_server)
+			MAIL.user(pop3_username)
+			MAIL.pass_(pop3_password)
+			message_count = MAIL.stat()[0]
+			MAIL.quit()
+			return message_count
+		except socket.gaierror as e:
+			logging.error("Socket error connecting to server:  '%s'" % e, exc_info=True)
+			return  -12
+		except poplib.error_proto as e:
+			logging.error("Poplib error connecting to server:  '%s'" % e, exc_info=True)
+			return  -13
+		except Exception as e:
+			logging.error("Some error connecting to server:  '%s'" % e, exc_info=True)
+			return  -14
 	else:
 		logging.error("not connected because some credentials are missing!")
 		return -11
