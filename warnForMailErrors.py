@@ -83,7 +83,7 @@ def parse_arguments(syslogApName='PYTHON',syslogFacility=SysLogHandler.LOG_USER)
 	args = parser.parse_args()
 
 	# setup logging as soon as possible to have it ready when needed
-	if not setup_logging(args):
+	if not setup_logging(args, syslogApName, syslogFacility):
 		args.ERROR_SETUPLOG = True
 
 	# is the config file readable?
@@ -97,7 +97,7 @@ def parse_arguments(syslogApName='PYTHON',syslogFacility=SysLogHandler.LOG_USER)
 	return args
 
 # Configure logging according to command line options
-def setup_logging(args):
+def setup_logging(args, syslogApName, syslogFacility):
 	# setting log format
 	# See: https://docs.python.org/2/library/logging.html#logrecord-attributes
 	logging_format_string = '%(asctime)s [%(levelname)-7s][%(filename)s:%(lineno)04d][%(funcName)s] %(message)s'
@@ -170,9 +170,8 @@ def setup_logging(args):
 			logging.error("SYSLOG logging not yet supported for this platform '%s'!" % sys.platform )
 			return False
 
-		#POP3MONITOR
+		# Add SYSLOG logger
 		syslog_format_string = '%(asctime)s %(appname)s[%(process)d]: [%(levelname)s][%(username)s][%(filename)s:%(lineno)04d][%(funcName)s] %(message)s'
-
 		rootLogger = logging.getLogger()
 		rootLogger.setLevel(args.LOGLEVEL)
 		syslogFilter = ContextFilter()
@@ -181,6 +180,8 @@ def setup_logging(args):
 		syslogFormatter = logging.Formatter(syslog_format_string, datefmt='%b %d %H:%M:%S')
 		syslog.setFormatter(syslogFormatter)
 		rootLogger.addHandler(syslog)
+
+	return True
 
 
 #####################################################
@@ -206,6 +207,7 @@ def read_config(config_file):
 					pop3_username = config.get("retriever", "username")
 				if config.has_option("retriever", "password"):
 					pop3_password = config.get("retriever", "password")
+	logging.debug("config is fine!")
 	return (pop3_server, pop3_username, pop3_password)
 
 # Connect to the POP3 server and count messages
@@ -223,11 +225,15 @@ def main():
 	# checking command line arguments
 	args = parse_arguments(syslogApName="POP3MONITOR",syslogFacility=SysLogHandler.LOG_MAIL)
 	if args is None:
+		logging.debug("ARGS is None")
 		return -22
 	elif hasattr(args, 'ERROR_SETUPLOG') and args.ERROR_SETUPLOG:
+		logging.debug("ARGS has ERROR_SETUPLOG")
 		return -33
 	elif hasattr(args, 'ERROR_READCONFIG') and args.ERROR_READCONFIG:
+		logging.debug("ARGS has ERROR_READCONFIG")
 		return -44
+	logging.debug("ARGS is fine!")
 
 	message_count = count_waiting_messages(args.pop3_server, args.pop3_username, args.pop3_password)
 	logging.debug("Warning when %d messages or more are queued!", args.WARNMSGCOUNT )
