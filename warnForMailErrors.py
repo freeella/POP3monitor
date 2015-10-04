@@ -52,6 +52,8 @@ def print_stack(stack_trace=None):
 		'''
 		This function is used for debugging only.
 		'''
+		# TODO - How to print a stack trace from an exception via this method?
+		global is_debug
 		stack_trace = None
 		if stack_trace is None:
 			# - logging.debug("text",exc_info=True) does not work
@@ -67,7 +69,7 @@ def print_stack(stack_trace=None):
 		logging.debug( print_stack.END )
 
 # Read command line arguments
-def parse_arguments(syslogApName='PYTHON',syslogFacility=SysLogHandler.LOG_USER):
+def parse_arguments(syslogAppName='PYTHON',syslogFacility=SysLogHandler.LOG_USER):
 	global is_debug
 	parser = argparse.ArgumentParser(description=__doc__)
 	parser.add_argument('-v','--version', action='version', version="%(prog)s ("+__version__+")" )
@@ -86,7 +88,7 @@ def parse_arguments(syslogApName='PYTHON',syslogFacility=SysLogHandler.LOG_USER)
 	args = parser.parse_args()
 
 	# setup logging as soon as possible to have it ready when needed
-	if not setup_logging(args, syslogApName, syslogFacility):
+	if not setup_logging(args, syslogAppName, syslogFacility):
 		args.ERROR_SETUPLOG = True
 
 	# is the config file readable?
@@ -101,7 +103,7 @@ def parse_arguments(syslogApName='PYTHON',syslogFacility=SysLogHandler.LOG_USER)
 	return args
 
 # Configure logging according to command line options
-def setup_logging(args, syslogApName, syslogFacility):
+def setup_logging(args, syslogAppName, syslogFacility):
 	global is_debug
 	# setting log format
 	# See: https://docs.python.org/2/library/logging.html#logrecord-attributes
@@ -150,15 +152,15 @@ def setup_logging(args, syslogApName, syslogFacility):
 		#   %(username)s - the user name running the scripts runs with
 		#   %(logname)s  - name to be written to SYSLOG
 		class ContextFilter(logging.Filter):
-		 	hostname = socket.gethostname()
-		 	username = pwd.getpwuid(os.getuid())[0]
-		 	appname  = syslogApName
+			hostname = socket.gethostname()
+			username = pwd.getpwuid(os.getuid())[0]
+			appname  = syslogAppName
 
-		 	def filter(self, record):
-		 		record.hostname = ContextFilter.hostname
-		 		record.username = ContextFilter.username
-		 		record.appname = ContextFilter.appname
-		 		return True
+			def filter(self, record):
+				record.hostname = ContextFilter.hostname
+				record.username = ContextFilter.username
+				record.appname = ContextFilter.appname
+				return True
 		
 		# See: https://docs.python.org/2/library/sys.html#sys.platform
 		syslog_socket = None
@@ -194,11 +196,13 @@ def setup_logging(args, syslogApName, syslogFacility):
 #####################################################
 # Adds project specific command line arguments
 def add_business_logic_arguments(parser):
+	global is_debug
 	parser.add_argument('-C','--config', type=str, dest='CONFIG', default="%s/%s" % ( os.environ['HOME'] , '.getmail/getmailrc' ), help='GETMAIL config file' )
 	parser.add_argument('-m','--warn-messages', type=int, dest='WARNMSGCOUNT', default=3, help='warning at this amount of waiting messages (default 3)' )
 
 # Read GETMAIL config file!
 def read_config(config_file, args):
+	global is_debug
 	pop3_server = pop3_username = pop3_password = None
 	config = ConfigParser.ConfigParser()
 	config.read( config_file )
@@ -248,8 +252,9 @@ def count_waiting_messages(pop3_server, pop3_username, pop3_password):
 
 # MAIN method
 def main():
+	global is_debug
 	# checking command line arguments
-	args = parse_arguments(syslogApName="POP3MONITOR",syslogFacility=SysLogHandler.LOG_MAIL)
+	args = parse_arguments(syslogAppName="POP3MONITOR",syslogFacility=SysLogHandler.LOG_MAIL)
 	if args is None:
 		logging.debug("ARGS is None")
 		return -22
