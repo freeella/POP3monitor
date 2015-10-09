@@ -12,7 +12,7 @@ This script can be used as cron job in order to receive alerts via mail.
 '''
 __author__ = "Kai Ellinger"
 __copyright__ = "Copyright 2015, Kai Ellinger"
-#__credits__ = ["some name", "some name 2"]
+#__credits__ = ["yes", "please"]
 __license__ = "MIT"
 __version__ = "1.0.5"
 __maintainer__ = "Kai Ellinger"
